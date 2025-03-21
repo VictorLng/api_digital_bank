@@ -1,4 +1,3 @@
-
 ## API Documentation
 
 ### Overview
@@ -27,7 +26,12 @@ POST /register
     "name": "John Doe",
     "email": "john@example.com",
     "cpf": "12345678900",
-    "password": "secure_password"
+    "password": "secure_password",
+    "phone": "123456789",
+    "birth_date": "1990-01-01",
+    "password_confirmation": "secure_password",
+    "bank_account_type": "checking",
+    "account_role": "USER"
 }
 ```
 **Response** (200 OK):
@@ -38,9 +42,15 @@ POST /register
         "id": 1,
         "name": "John Doe",
         "email": "john@example.com",
+        "cpf": "12345678900",
+        "phone": "123456789",
+        "birth_date": "1990-01-01",
         "customer_account": {
             "account_number": "123456789",
-            "balance": 0
+            "agency": "0001",
+            "type_account": "checking",
+            "balance": 0.00,
+            "status": "active"
         }
     },
     "token": "access_token_here"
@@ -65,7 +75,17 @@ POST /login
     "data": {
         "id": 1,
         "name": "John Doe",
-        "email": "john@example.com"
+        "email": "john@example.com",
+        "cpf": "12345678900",
+        "phone": "123456789",
+        "birth_date": "1990-01-01",
+        "customer_account": {
+            "account_number": "123456789",
+            "agency": "0001",
+            "type_account": "checking",
+            "balance": 0.00,
+            "status": "active"
+        }
     },
     "token": "access_token_here"
 }
@@ -86,6 +106,7 @@ Authorization: Bearer {token}
     "message": "Logged out successfully"
 }
 ```
+
 ### Account Management Endpoints
 
 #### Add Funds
@@ -249,7 +270,10 @@ Authorization: Bearer {token}
         "balance": 25.00,
         "owner": {
             "name": "John Doe",
-            "cpf": "12345678900"
+            "cpf": "12345678900",
+            "email": "john@example.com",
+            "phone": "123456789",
+            "birth_date": "1990-01-01"
         },
         "created_at": "2023-07-01"
     }
@@ -277,15 +301,6 @@ All API errors return with appropriate HTTP status codes and a consistent JSON s
 - `404` - Not Found: Resource not found
 - `422` - Unprocessable Entity: Validation errors
 - `500` - Internal Server Error: Server-side issue
-
-### Interactive Documentation
-
-This API provides Swagger/OpenAPI documentation at:
-```
-/api/documentation
-```
-
-Use this interactive interface to explore endpoints, request parameters, and response schemas.
 
 ### Rate Limiting
 
