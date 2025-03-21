@@ -42,7 +42,7 @@
 
       public function logout(UserRequest $request)
       {
-          $return = $this->userBo->logout($request->user());
+          $return = $this->userBo->logout($request);
 
           if (!$return) {
               return response()->json(['message' => 'User not logged out'], 400);

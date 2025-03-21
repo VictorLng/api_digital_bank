@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 
 Route::controller(UserController::class)->group(function () {
-    Route::post('register', 'Register')->name('register');
+    Route::post('register', 'Register');
     Route::post('login', 'Login');
     Route::post('forgot-password', 'forgotPassword');
 });

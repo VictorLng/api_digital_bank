@@ -64,7 +64,9 @@ class AuthService
     public function logout($request): bool
     {
         try {
-            $this->userRepository->Logout($request);
+            $request->user()->tokens()->update(['revoked' => true]);
+
+            Log::info('Usuário deslogado com sucesso: ' . $request->user()->email);
             return true;
         } catch (\Exception $e) {
             Log::error('Erro ao fazer logout: ' . $e->getMessage());

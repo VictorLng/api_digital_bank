@@ -30,4 +30,25 @@ class UserRequest extends CustomRulesRequest
             'password' => 'required'
         ];
     }
+
+    public function validateToLogout()
+    {
+        return [
+            // Validation rules for logout
+        ];
+    }
+
+    public function validateToForgotPassword()
+    {
+        return [
+            // Validation rules for forgot password
+        ];
+    }
+
+    public function validateToPasswordChange()
+    {
+        return [
+            // Validation rules for password change
+        ];
+    }
 }

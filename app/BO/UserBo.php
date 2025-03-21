@@ -65,7 +65,7 @@ class UserBo implements UserInterface
     /**
      * Realiza o logout do usuário
      *
-     * @param mixed $request
+     * @param \Illuminate\Http\Request $request
      * @return bool
      */
     public function Logout($request): bool
