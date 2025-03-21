@@ -38,17 +38,4 @@ class UserRequest extends CustomRulesRequest
         ];
     }
 
-    public function validateToForgotPassword()
-    {
-        return [
-            // Validation rules for forgot password
-        ];
-    }
-
-    public function validateToPasswordChange()
-    {
-        return [
-            // Validation rules for password change
-        ];
-    }
 }
