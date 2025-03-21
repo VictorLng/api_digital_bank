@@ -9,7 +9,6 @@ use App\Interfaces\HashServiceInterface;
 use App\Services\HashService;
 use Laravel\Passport\Passport;
 use App\Services\Auth\AuthService;
-use App\Services\Auth\PasswordService;
 use App\Services\User\UserRegistrationService;
 use App\Repositories\UserRepository;
 
@@ -20,10 +19,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // Registra o serviço de hash
+
         $this->app->bind(HashServiceInterface::class, HashService::class);
 
-        // Auth Services
+
         $this->app->bind(AuthService::class, function ($app) {
             return new AuthService(
                 $app->make(UserRepository::class),
@@ -31,7 +30,7 @@ class AppServiceProvider extends ServiceProvider
                 $app->make(CustomerAccountBo::class)
             );
         });
-        // User Services
+
         $this->app->bind(UserRegistrationService::class, function ($app) {
             return new UserRegistrationService(
                 $app->make(UserRepository::class),

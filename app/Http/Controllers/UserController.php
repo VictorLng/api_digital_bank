@@ -50,26 +50,4 @@
 
           return response()->json(['message' => 'User logged out'], 200);
       }
-
-      public function forgotPassword(UserRequest $request)
-      {
-          $return = $this->userBo->forgotPassword($request);
-
-          if (!$return) {
-              return response()->json(['message' => 'User not found'], 400);
-          }
-
-          return response()->json(['message' => 'Password reset instructions sent'], 200);
-      }
-
-      public function passwordChange(UserRequest $request)
-      {
-          $return = $this->userBo->passwordChange($request);
-
-          if (!$return) {
-              return response()->json(['message' => 'Password not changed'], 400);
-          }
-
-          return response()->json(['message' => 'Password changed successfully'], 200);
-      }
   }

@@ -88,7 +88,6 @@ class AuthService
     {
         try {
             $user = $this->validateAuthenticatedUser($request);
-
             // Revoga o token atual
             $token = $request->user()->token();
             if ($token) {
@@ -115,7 +114,6 @@ class AuthService
      */
     public function mapUserToUserData(User $user, UserData $userData): array
     {
-
         return $userData->setName($user->name)
             ->setEmail($user->email)
             ->setCpf($user->cpf)
