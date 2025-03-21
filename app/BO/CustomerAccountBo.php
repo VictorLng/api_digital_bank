@@ -401,6 +401,17 @@ class CustomerAccountBo implements CustomerAccountInterface
     }
 
     /**
+     * Converte um modelo CustomerAccount em um objeto CustomerAccountData
+     *
+     * @param CustomerAccount $account
+     * @return CustomerAccountData
+     */
+    public function convertToCustomerAccountData(CustomerAccount $account): CustomerAccountData
+    {
+        return $this->mountCustomerAccountData($account);
+    }
+
+    /**
      * Cria uma nova conta de cliente com número de conta gerado automaticamente
      *
      * @param mixed $request
@@ -454,5 +465,10 @@ class CustomerAccountBo implements CustomerAccountInterface
     public function registerCustomerAccount(array $customerAccountData)
     {
         return $this->customerAccountRepository->register($customerAccountData);
+    }
+
+    public function findByUserId($userId)
+    {
+        return $this->customerAccountRepository->findByUserId($userId);
     }
 }

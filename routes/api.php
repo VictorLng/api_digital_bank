@@ -27,6 +27,8 @@ Route::middleware('auth:api')->group(function () {
     });
 });
 
+Route::get('/accounts/statement', [CustomerAccountController::class, 'getStatement'])->middleware('auth:api');
+
 Route::fallback(function () {
     return response()->json([
         'success' => false,

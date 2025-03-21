@@ -8,6 +8,7 @@ use App\Exceptions\InvalidTransactionException;
 use App\Http\Requests\CustomerAccountRequest;
 use App\BO\CustomerAccountBo;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Http\JsonResponse;
 
 class CustomerAccountController extends Controller
 {
@@ -183,6 +184,35 @@ class CustomerAccountController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Erro interno ao processar a operação'
+            ], 500);
+        }
+    }
+
+    /**
+     * Obtém o extrato de uma conta
+     *
+     * @param CustomerAccountRequest $request
+     * @return JsonResponse
+     */
+    public function getStatement(CustomerAccountRequest $request): JsonResponse
+    {
+        try {
+            $validatedData = $request->validated();
+            $statement = $this->customerAccountBo->getStatement($request);
+
+            return response()->json([
+                'success' => true,
+                'data' => $statement
+            ]);
+        } catch (AccountNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Conta não encontrada: ' . $e->getMessage()
+            ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao obter extrato: ' . $e->getMessage()
             ], 500);
         }
     }

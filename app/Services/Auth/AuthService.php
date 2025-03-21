@@ -120,7 +120,7 @@ class AuthService
             ->setPhone($user->phone)
             ->setBirthDate($user->birth_date)
             ->setToken($user->token)
-            ->setCustomerAccount( $this->customerAccountBo->findByUserId($user->id))
+            ->setCustomerAccount($this->customerAccountBo->convertToCustomerAccountData($this->customerAccountBo->findByUserId($user->id)))
             ->toArray();
     }
 }

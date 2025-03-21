@@ -51,4 +51,18 @@ class CustomerAccountRequest extends CustomRulesRequest
             'account_number' => 'required|string|exists:customer_accounts,number_account',
         ];
     }
+
+    /**
+     * Validação para obter o extrato da conta
+     *
+     * @return array
+     */
+    public function validateToGetStatement()
+    {
+        return [
+            'account_number' => 'required|string|exists:customer_accounts,number_account',
+            'start_date' => 'nullable|date_format:Y-m-d',
+            'end_date' => 'nullable|date_format:Y-m-d|after_or_equal:start_date',
+        ];
+    }
 }
