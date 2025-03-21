@@ -6,6 +6,7 @@ class CustomerAccountData
 {
     private $balance;
     private $number_account;
+    private $id_user;
     private $agency;
     private $type_account;
     private $status;
@@ -66,11 +67,23 @@ class CustomerAccountData
         return $this;
     }
 
+    public function setIdUser($id_user)
+    {
+        $this->id_user = $id_user;
+        return $this;
+    }
+
+    public function getIdUser()
+    {
+        return $this->id_user;
+    }
+
     public function toArray()
     {
         return [
             'balance' => $this->balance,
             'number_account' => $this->number_account,
+            'id_user' => $this->id_user,
             'agency' => $this->agency,
             'type_account' => $this->type_account,
             'status' => $this->status,

@@ -13,6 +13,21 @@ class CustomerAccountRepository
         $this->model = $model;
     }
 
+    public function register($customerData)
+    {
+        return $this->model->firstOrCreate([
+            'number_account' => $customerData->number_account,
+            'user_id' => $customerData->user_id,
+        ], [
+            'number_account' => $customerData->number_account,
+            'agency' => $customerData->agency,
+            'type_account' => $customerData->type_account,
+            'status' => $customerData->status,
+            'user_id' => $customerData->user_id,
+            'balance' => 0
+        ]);
+    }
+
     /**
      * Verifica se um número de conta já existe
      *

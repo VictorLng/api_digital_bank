@@ -64,12 +64,12 @@ class CustomerAccountBo implements CustomerAccountInterface
      * @param mixed $request
      * @return CustomerAccountData
      */
-    public function createCustomerAccount($request)
+    public function createCustomerAccount($request): CustomerAccountData
     {
         $accountNumber = $this->accountNumberGenerator->generate();
 
         $this->customerAccountData->setNumberAccount($accountNumber);
-
+        $this->customerAccountData->setIdUser($request->id);
         if (!$this->customerAccountData->getBalance()) {
             $this->customerAccountData->setBalance(0);
         }
@@ -78,7 +78,24 @@ class CustomerAccountBo implements CustomerAccountInterface
             $this->customerAccountData->setStatus('active');
         }
 
+        if (!$this->customerAccountData->getAgency()) {
+            $this->customerAccountData->setAgency('0001');
+        }
+
+        $this->registerCustomerAccount($this->customerAccountData->toArray());
 
         return $this->customerAccountData;
     }
+    /**
+     * Registra uma nova conta de cliente
+     *
+     * @param CustomerAccountData $customerAccountData
+     * @return void
+     */
+
+    public function registerCustomerAccount($customerAccountData)
+    {
+        $this->customerAccountRepository->register($customerAccountData);
+    }
+
 }

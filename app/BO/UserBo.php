@@ -2,30 +2,38 @@
 
 namespace App\BO;
 
-// Removed unused use directive
 use App\Repositories\UserRepository;
 use App\Resources\UserData;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use App\BO\Interfaces\UserInterface;
 use App\BO\CustomerAccountBo;
-use Illuminate\Support\Facades\App;
+use App\Exceptions\UserNotFoundException;
+use App\Exceptions\InvalidPasswordException;
+use App\Exceptions\DomainException;
+use App\Exceptions\PasswordChangeException;
+use App\Interfaces\HashServiceInterface;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ForgotPasswordMail;
+use Illuminate\Support\Facades\Log;
 
 class UserBo implements UserInterface
 {
-    protected $userRepository;
-    protected $userData;
-    protected $customerAccountBo;
+    protected UserRepository $userRepository;
+    protected UserData $userData;
+    protected CustomerAccountBo $customerAccountBo;
+    protected HashServiceInterface $hashService;
 
     public function __construct(
         UserRepository $userRepository,
         UserData $userData,
-        CustomerAccountBo $customerAccountBo
+        CustomerAccountBo $customerAccountBo,
+        HashServiceInterface $hashService
     ) {
         $this->userData = $userData;
         $this->userRepository = $userRepository;
         $this->customerAccountBo = $customerAccountBo;
+        $this->hashService = $hashService;
     }
 
     public function Register($request): UserData
@@ -36,61 +44,118 @@ class UserBo implements UserInterface
             $this->userData->setName($request->name)
                 ->setCpf($request->cpf)
                 ->setEmail($request->email)
-                ->setPassword(Hash::make($request->password))
-                ->setRememberToken(Hash::make($request->email))
-                ->setCustomerAccount($this->customerAccountBo->createCustomerAccount($request));
+                ->setPassword($this->hashService->hash($request->password))
+                ->setRememberToken($this->hashService->hash($request->email));
 
-            dd($this->userData->toArray());
-            $this->userRepository->Register($this->userData->toArray());
+            $user = $this->userRepository->Register($this->userData->toArray());
+
+            if ($user) {
+                $this->userData->setCustomerAccount($this->customerAccountBo->createCustomerAccount($user));
+            }
 
             DB::commit();
             return $this->userData;
         } catch (\Exception $e) {
             DB::rollBack();
-            throw new \Exception($e->getMessage());
+            Log::error('Erro ao registrar usuário: ' . $e->getMessage());
+            throw new DomainException('Erro ao registrar usuário: ' . $e->getMessage());
         }
     }
 
     public function Login($request): UserData
     {
-        $user = $this->userRepository->Login($request);
-        return $this->getUserAcessData($user);
+        try {
+            $user = $this->userRepository->Login($request);
+
+            if (!$user) {
+                throw new UserNotFoundException('Usuário não encontrado');
+            }
+
+            if (!$this->hashService->check($request->password, $user->password)) {
+                throw new InvalidPasswordException('Senha incorreta');
+            }
+
+            return $this->getUserAccessData($user);
+        } catch (\Exception $e) {
+            Log::error('Erro ao fazer login: ' . $e->getMessage());
+            throw $e;
+        }
     }
 
     public function Logout($request): bool
     {
-        $this->userRepository->Logout($request);
-        return true;
+        try {
+            $this->userRepository->Logout($request);
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Erro ao fazer logout: ' . $e->getMessage());
+            return false;
+        }
     }
 
     public function forgotPassword($request): bool
     {
-        $user = $this->validateUser($request->email);
+        try {
+            // Gerar token numérico de 4 dígitos
+            $token = sprintf('%04d', mt_rand(0, 9999));
 
-        // Gerar token de recuperação
-        $token = bin2hex(random_bytes(16));
+            $user = $this->validateUser($request->email);
 
-        // Salvar o token no repositório
-        $this->userRepository->savePasswordResetToken($user->id, $token);
+            $expiresInMinutes = 60;
+            $tokenData = (object) [
+                'email' => $request->email,
+                'token' => $token,
+                'created_at' => now(),
+                'expires_at' => now()->addMinutes($expiresInMinutes)
+            ];
 
-        // Enviar email de recuperação
-        \Mail::to($user->email)->send(new ForgotPasswordMail($token));
+            $this->userRepository->saveForgotPasswordToken($tokenData);
 
-        return true;
+            // Enviar email com o token
+            Mail::to($request->email)->send(new ForgotPasswordMail($token, $expiresInMinutes));
+
+            return true;
+        } catch (UserNotFoundException $e) {
+            // Ainda retornamos true para não revelar se o email existe
+            Log::info('Tentativa de recuperação para email não existente: ' . $request->email);
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Erro ao processar recuperação de senha: ' . $e->getMessage());
+            return false;
+        }
     }
 
-    private function validateUser(string $email): App\Models\User
+    /**
+     * Valida se um usuário existe pelo email
+     *
+     * @param string $email
+     * @return User
+     * @throws UserNotFoundException
+     */
+    private function validateUser(string $email): User
     {
-        $user = $this->userRepository->findByEmail($email);
+        // Criando objeto para compatibilidade com o método do repositório
+        $emailObject = (object) ['email' => $email];
+        $user = $this->userRepository->findByEmail($emailObject);
+
         if (!$user) {
             throw new UserNotFoundException('Usuário não encontrado');
         }
+
         return $user;
     }
 
+    /**
+     * Valida se a senha atual está correta
+     *
+     * @param User $user
+     * @param string $currentPassword
+     * @return void
+     * @throws InvalidPasswordException
+     */
     private function validateCurrentPassword(User $user, string $currentPassword): void
     {
-        if (!hash::check($currentPassword, $user->password)) {
+        if (!$this->hashService->check($currentPassword, $user->password)) {
             throw new InvalidPasswordException('Senha atual incorreta');
         }
     }
@@ -106,19 +171,28 @@ class UserBo implements UserInterface
                 ->setNewPassword($this->hashService->hash($request->new_password));
 
             return $this->userRepository->passwordChange($this->userData);
-        } catch (DomainException $e) {
-            // Log específico para erros de domínio
-            \Log::warning('Falha na alteração de senha: ' . $e->getMessage());
+        } catch (UserNotFoundException | InvalidPasswordException $e) {
+            // Erros de domínio específicos
+            Log::warning('Falha na alteração de senha: ' . $e->getMessage());
             throw $e; // Propagar para tratamento na camada superior
         } catch (\Exception $e) {
-            \Log::error('Erro ao alterar senha: ' . $e->getMessage());
-            throw new PasswordChangeException('Erro interno ao alterar senha', 0, $e);
+            Log::error('Erro ao alterar senha: ' . $e->getMessage());
+            throw new PasswordChangeException('Erro interno ao alterar senha', 500, $e);
         }
     }
 
-    private function getUserAcessData($request)
+    /**
+     * Obtém os dados de acesso do usuário
+     *
+     * @param User $user
+     * @return UserData
+     */
+    private function getUserAccessData(User $user): UserData
     {
-        $this->userData;
+        $this->userData->setName($user->name)
+            ->setEmail($user->email)
+            ->setCpf($user->cpf);
+
         return $this->userData;
     }
 }

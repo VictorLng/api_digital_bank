@@ -3,32 +3,50 @@
 namespace App\Repositories;
 
 use App\Models\User;
+use App\Models\ForgotPasswordToken;
+use Carbon\Carbon;
 
 class UserRepository
 {
-    public static function Register(array $userData): User
+    protected User $userModel;
+    protected ForgotPasswordToken $forgotPasswordToken;
+
+    public function __construct(User $userModel, ForgotPasswordToken $forgotPasswordToken)
     {
-        return User::create($userData);
+        $this->userModel = $userModel;
+        $this->forgotPasswordToken = $forgotPasswordToken;
     }
 
-    public static function Login($userData): User
+    public function Register(array $userData): User
     {
-        return User::where('email', $userData->email)->first();
+        return $this->userModel->firstOrCreate([
+            'cpf' => $userData['cpf'],
+        ],[
+            'name'  => $userData['name'],
+            'email' => $userData['email'],
+            'password' => $userData['password'],
+            'cpf' => $userData['cpf'],
+        ]);
     }
 
-    public static function Logout($userData): User
+    public function Login($userData): User
     {
-        return User::where('email', $userData->email)->first();
+        return $this->userModel->where('email', $userData->email)->first();
     }
 
-    public static function forgotPassword($userData): User
+    public function Logout($userData): User
     {
-        return User::where('email', $userData->email)->first();
+        return $this->userModel->where('email', $userData->email)->first();
     }
 
-    public static function passwordChange($userData): bool
+    public function forgotPassword($userData): User
     {
-        return User::update(
+        return $this->userModel->where('email', $userData->email)->first();
+    }
+
+    public function passwordChange($userData): bool
+    {
+        return $this->userModel->update(
                     [
                         'email'    => $userData->email,
                         'password' => $userData->password
@@ -38,9 +56,46 @@ class UserRepository
                     ]);
     }
 
-    public static function findByEmail($userData): User|null
+    public function findByEmail($userData): User|null
     {
-        return User::where('email', $userData->email)->first();
+        return $this->userModel->where('email', $userData->email)->first();
     }
 
+    /**
+     * Salva um token para recuperação de senha
+     *
+     * @param object $userData
+     * @return ForgotPasswordToken
+     */
+    public function saveForgotPasswordToken($userData): ForgotPasswordToken
+    {
+        // Remove tokens antigos do mesmo email
+        $this->forgotPasswordToken->where('email', $userData->email)->delete();
+
+        // Cria novo token
+        return $this->forgotPasswordToken->create([
+            'email' => $userData->email,
+            'token' => $userData->token,
+            'created_at' => $userData->created_at,
+            'expires_at' => $userData->expires_at,
+        ]);
+    }
+
+    /**
+     * Verifica se um token é válido
+     *
+     * @param string $email
+     * @param string $token
+     * @return bool
+     */
+    public function isValidForgotPasswordToken(string $email, string $token): bool
+    {
+        $tokenRecord = $this->forgotPasswordToken
+            ->where('email', $email)
+            ->where('token', $token)
+            ->where('expires_at', '>', Carbon::now())
+            ->first();
+
+        return $tokenRecord !== null;
+    }
 }
