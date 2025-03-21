@@ -14,9 +14,9 @@ class UserRequest extends CustomRulesRequest
     {
         return [
             'name'  => 'required|string',
-            'cpf'   => 'required|string|size:11',
+            'cpf'   => 'required|string|unique:users',
             'email' => 'required|email|unique:users',
-            'bank_account_type' => 'required|string|in:CORRENTE,POUPANCA',
+            'bank_account_type' => 'required|string|in:checking,savings,investment',
             'password' => 'required|string|min:6|confirmed',
             'account_role' => 'required|string|in:ADMIN,USER',
         ];

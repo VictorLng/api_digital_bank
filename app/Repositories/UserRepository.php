@@ -23,9 +23,11 @@ class UserRepository
             'cpf' => $userData['cpf'],
         ],[
             'name'  => $userData['name'],
+            'cpf' => $userData['cpf'],
+            'birth_date' => $userData['birth_date'],
+            'phone' => $userData['phone'],
             'email' => $userData['email'],
             'password' => $userData['password'],
-            'cpf' => $userData['cpf'],
         ]);
     }
 

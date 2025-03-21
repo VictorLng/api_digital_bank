@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->string('cpf', 11)->unique()->after('name');
+            $table->string('phone')->nullable()->after('email');
+            $table->date('birth_date')->nullable()->after('cpf');
         });
     }
 
@@ -22,7 +24,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('cpf');
+            $table->dropColumn('phone');
+            $table->dropColumn('birth_date');
         });
     }
 };

@@ -68,5 +68,5 @@ interface CustomerAccountInterface
      * @param mixed $request
      * @return CustomerAccountData
      */
-    public function createCustomerAccount($request): CustomerAccountData;
+    public function createCustomerAccount($request, $typeAccount): CustomerAccountData;
 }

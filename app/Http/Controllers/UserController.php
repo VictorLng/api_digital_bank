@@ -30,7 +30,6 @@
       public function login(UserRequest $request)
       {
           $return = $this->userBo->login($request);
-
           if (!$return) {
               return response()->json(['message' => 'User not logged in'], 400);
           }

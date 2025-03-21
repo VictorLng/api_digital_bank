@@ -16,16 +16,21 @@ class CustomerAccountRepository
     public function register($customerData)
     {
         return $this->model->firstOrCreate([
-            'number_account' => $customerData->number_account,
-            'user_id' => $customerData->user_id,
+            'number_account' => $customerData["number_account"],
+            'user_id' => $customerData["id_user"],
         ], [
-            'number_account' => $customerData->number_account,
-            'agency' => $customerData->agency,
-            'type_account' => $customerData->type_account,
-            'status' => $customerData->status,
-            'user_id' => $customerData->user_id,
+            'number_account' => $customerData["number_account"],
+            'agency' => $customerData["agency"],
+            'type_account' => $customerData["type_account"],
+            'status' => $customerData["status"],
+            'user_id' => $customerData["id_user"],
             'balance' => 0
         ]);
+    }
+
+    public function findByUserId($userId)
+    {
+        return $this->model->where('user_id', $userId)->first();
     }
 
     /**

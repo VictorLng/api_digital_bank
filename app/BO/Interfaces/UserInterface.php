@@ -11,9 +11,9 @@ interface UserInterface {
 
     /**
      * Summary of Login
-     * @return \App\Resources\UserData
+     * @return array
      */
-    public function Login($request): \App\Resources\UserData;
+    public function Login($request): array;
 
     /**
      * Summary of Logout

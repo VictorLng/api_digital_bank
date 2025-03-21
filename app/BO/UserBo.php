@@ -51,7 +51,7 @@ class UserBo implements UserInterface
      * @return UserData
      * @throws UserNotFoundException|InvalidPasswordException
      */
-    public function Login($request): UserData
+    public function Login($request): array
     {
         try {
             $user = $this->authService->login($request);

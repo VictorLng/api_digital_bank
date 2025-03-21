@@ -8,10 +8,13 @@ class UserData
     private ?string $name;
     private ?string $email;
     private ?string $cpf;
-    private ?string $password;
-    private ?string $newPassword;
-    private ?string $confirmPassword;
-    private ?string $remember_token;
+    private ?string $birth_date;
+    private ?string $phone;
+    private ?string $password = '';
+    private ?string $newPassword = '';
+    private ?string $confirmPassword = '';
+    private ?string $token = '';
+
     private CustomerAccountData $customerAccont;
 
     public function __construct(CustomerAccountData $customerAccont)
@@ -31,6 +34,12 @@ class UserData
 
     public function setCpf($cpf): self
     {
+
+        $cpf = preg_replace('/[^0-9]/', '', $cpf);
+        if (empty($cpf)) {
+            throw new \InvalidArgumentException('CPF must contain at least one numeric character');
+        }
+
         $this->cpf = $cpf;
         return $this;
     }
@@ -38,6 +47,28 @@ class UserData
     public function getCpf(): ?string
     {
         return $this->cpf;
+    }
+
+    public function setBirthDate($birth_date): self
+    {
+        $this->birth_date = $birth_date;
+        return $this;
+    }
+
+    public function getBirthDate(): ?string
+    {
+        return $this->birth_date;
+    }
+
+    public function setPhone($phone): self
+    {
+        $this->phone = $phone;
+        return $this;
+    }
+
+    public function getPhone(): ?string
+    {
+        return $this->phone;
     }
 
     public function setEmail($email): self
@@ -51,6 +82,17 @@ class UserData
         return $this->email;
     }
 
+    public function setToken($token): self
+    {
+        $this->token = $token;
+        return $this;
+    }
+
+    public function getToken(): ?string
+    {
+        return $this->token;
+    }
+
     public function setPassword($password): self
     {
         $this->password = $password;
@@ -61,18 +103,6 @@ class UserData
     {
         return $this->password;
     }
-
-    public function setRememberToken($remember_token): self
-    {
-        $this->remember_token = $remember_token;
-        return $this;
-    }
-
-    public function getRememberToken(): ?string
-    {
-        return $this->remember_token;
-    }
-
     public function setNewPassword($newPassword): self
     {
         $this->newPassword = $newPassword;
@@ -111,10 +141,12 @@ class UserData
         return [
             'name' => $this->getName(),
             'cpf' => $this->getCpf(),
+            'birth_date' => $this->getBirthDate(),
+            'phone' => $this->getPhone(),
             'email' => $this->getEmail(),
             'password' => $this->getPassword(),
+            'token' => $this->getToken(),
             'CustomerAccount' => $this->getCustomerAccount()->toArray(),
-            'remember_token' => $this->getRememberToken() ?? null,
         ];
     }
 }

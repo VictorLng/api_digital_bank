@@ -9,6 +9,7 @@ use App\Interfaces\AccountNumberGeneratorInterface;
 use App\Exceptions\AccountNotFoundException;
 use App\Exceptions\InsufficientFundsException;
 use App\Exceptions\InvalidTransactionException;
+use App\Models\CustomerAccount;
 use Illuminate\Support\Facades\Log;
 
 class CustomerAccountBo implements CustomerAccountInterface
@@ -130,10 +131,10 @@ class CustomerAccountBo implements CustomerAccountInterface
      * Encontra uma conta pelo número
      *
      * @param string $accountNumber
-     * @return CustomerAccountData
+     * @return
      * @throws AccountNotFoundException
      */
-    private function findAccount(string $accountNumber): CustomerAccountData
+    private function findAccount(string $accountNumber): CustomerAccount
     {
         $account = $this->customerAccountRepository->findByAccountNumber($accountNumber);
 
@@ -143,19 +144,37 @@ class CustomerAccountBo implements CustomerAccountInterface
 
         return $account;
     }
+    public function findByUserId($userId)
+    {
+        $account = $this->customerAccountRepository->findByUserId($userId);
+        return $this->mountCustomerAccountData($account);
+    }
 
+    public function mountCustomerAccountData($request)
+    {
+        $this->customerAccountData->setNumberAccount($request->number_account)
+            ->setIdUser($request->id_user)
+            ->setTypeAccount($request->type_account)
+            ->setBalance($request->balance)
+            ->setStatus($request->status)
+            ->setAgency($request->agency);
+
+        return $this->customerAccountData;
+    }
     /**
      * Cria uma nova conta de cliente com número de conta gerado automaticamente
      *
      * @param mixed $request
      * @return CustomerAccountData
      */
-    public function createCustomerAccount($request): CustomerAccountData
+    public function createCustomerAccount($request, $typeAccount): CustomerAccountData
     {
         $accountNumber = $this->accountNumberGenerator->generate();
 
-        $this->customerAccountData->setNumberAccount($accountNumber);
-        $this->customerAccountData->setIdUser($request->id);
+        $this->customerAccountData->setNumberAccount($accountNumber)
+        ->setIdUser($request->id)
+        ->setTypeAccount($typeAccount);
+
         if (!$this->customerAccountData->getBalance()) {
             $this->customerAccountData->setBalance(0);
         }
@@ -179,7 +198,7 @@ class CustomerAccountBo implements CustomerAccountInterface
      * @param CustomerAccountData $customerAccountData
      * @return void
      */
-    public function registerCustomerAccount($customerAccountData)
+    public function registerCustomerAccount(array $customerAccountData)
     {
         $this->customerAccountRepository->register($customerAccountData);
     }
