@@ -268,8 +268,6 @@ RUN chmod u+rwx,g+rx,o+rx /var/www/html
 RUN find /var/www/html -type d -exec chmod u+rwx,g+rx,o+rx {} +
 RUN find /var/www/html -type f -exec chmod u+rw,g+rw,o+r {} +
 
-RUN php artisan migrate
-
 USER appuser
 
 CMD ["php-fpm"]
