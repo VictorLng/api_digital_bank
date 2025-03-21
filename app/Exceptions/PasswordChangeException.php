@@ -6,7 +6,7 @@ use Exception;
 
 class PasswordChangeException extends Exception
 {
-    public function __construct(string $message = "Erro ao alterar senha", int $code = 500, \Throwable $previous = null)
+    public function __construct(string $message = "Erro ao alterar senha", int $code = 500, \Throwable $previous)
     {
         parent::__construct($message, $code, $previous);
     }
