@@ -27,9 +27,9 @@ POST /register
     "email": "john@example.com",
     "cpf": "12345678900",
     "password": "secure_password",
+    "password_confirmation": "secure_password",
     "phone": "123456789",
     "birth_date": "1990-01-01",
-    "password_confirmation": "secure_password",
     "bank_account_type": "checking",
     "account_role": "USER"
 }
@@ -79,6 +79,7 @@ POST /login
         "cpf": "12345678900",
         "phone": "123456789",
         "birth_date": "1990-01-01",
+        "token": "access_token_here"
         "customer_account": {
             "account_number": "123456789",
             "agency": "0001",
@@ -87,7 +88,6 @@ POST /login
             "status": "active"
         }
     },
-    "token": "access_token_here"
 }
 ```
 
