@@ -10,9 +10,9 @@ class CustomRulesRequest extends FormRequest
        /**
      * This method is the core of this class. It will call the other methods dynamically
      *
-     * @return  Array
+     * @return array
      */
-    public function rules(): Array
+    public function rules(): array
     {
         $method = "validateTo" . Str::ucfirst($this->route()->getActionMethod());
         return $this->$method();

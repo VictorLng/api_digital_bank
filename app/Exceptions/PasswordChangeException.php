@@ -3,19 +3,20 @@
 namespace App\Exceptions;
 
 use Exception;
+use Illuminate\Http\JsonResponse;
 
 class PasswordChangeException extends Exception
 {
-    public function __construct(string $message = "Erro ao alterar senha", int $code = 500, \Throwable $previous)
+    public function __construct(string $message = "Erro ao alterar senha")
     {
-        parent::__construct($message, $code, $previous);
+        parent::__construct($message, 500);
     }
 
-    public function render($request)
+    /**
+     * Render the exception into an HTTP response.
+     */
+    public function render(): JsonResponse
     {
-        return response()->json([
-            'error' => 'password_change_error',
-            'message' => $this->getMessage()
-        ], $this->getCode());
+        return response()->json(['message' => $this->getMessage()], $this->getCode());
     }
 }

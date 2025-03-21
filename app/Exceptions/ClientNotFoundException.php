@@ -3,16 +3,19 @@
 namespace App\Exceptions;
 
 use Exception;
-use Illuminate\Http\Request;
-use Throwable;
+use Illuminate\Http\JsonResponse;
 
 class ClientNotFoundException extends Exception
 {
-    public function __construct(string $message = "", int $code = 0, Throwable $previous )
+    public function __construct(string $cpf)
     {
-        parent::__construct($message, $code, $previous);
+        parent::__construct('Cliente com CPF ' . $cpf . ' não encontrado', 404);
     }
-    public function render(Request $request)
+
+    /**
+     * Render the exception into an HTTP response.
+     */
+    public function render(): JsonResponse
     {
         return response()->json(['message' => $this->getMessage()], $this->getCode());
     }

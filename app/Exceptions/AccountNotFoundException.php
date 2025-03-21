@@ -5,11 +5,11 @@ namespace App\Exceptions;
 use Exception;
 use Illuminate\Http\JsonResponse;
 
-class UserNotFoundException extends Exception
+class AccountNotFoundException extends Exception
 {
-    public function __construct(string $email)
+    public function __construct(string $accountNumber)
     {
-        $message = $email ? "Usuário com email $email não encontrado" : "Usuário não encontrado";
+        $message = $accountNumber ? "Conta com número $accountNumber não encontrada" : "Conta não encontrada";
         parent::__construct($message, 404);
     }
 

@@ -3,19 +3,20 @@
 namespace App\Exceptions;
 
 use Exception;
+use Illuminate\Http\JsonResponse;
 
 class DomainException extends Exception
 {
-    public function __construct(string $message = "Erro de domínio", int $code = 422, \Throwable $previous)
+    public function __construct(string $message = "Erro de domínio")
     {
-        parent::__construct($message, $code, $previous);
+        parent::__construct($message, 422);
     }
 
-    public function render($request)
+    /**
+     * Render the exception into an HTTP response.
+     */
+    public function render(): JsonResponse
     {
-        return response()->json([
-            'error' => 'domain_error',
-            'message' => $this->getMessage()
-        ], $this->getCode());
+        return response()->json(['message' => $this->getMessage()], $this->getCode());
     }
 }
