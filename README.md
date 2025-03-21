@@ -1,4 +1,10 @@
 ## API Documentation
+### Commands to Run the aplication
+docker-compose up --build
+
+**To run php and composer use alias**
+alias dphp="docker exec -it php-api_digital_bank php"
+alias dcomposer="docker exec -it php-api_digital_bank composer"
 
 ### Overview
 This API provides digital banking services including user authentication, account management, and transaction processing. Built with Laravel, it follows RESTful principles and uses JSON for data exchange.
