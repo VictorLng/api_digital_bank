@@ -20,16 +20,4 @@ interface UserInterface {
      * @return bool
      */
     public function Logout($request): bool;
-
-    /**
-     * Summary of forgotPassword
-     * @return bool
-     */
-    public function forgotPassword($request): bool;
-
-    /**
-     * Summary of passwordChange
-     * @return bool
-     */
-    public function passwordChange($request): bool;
 }

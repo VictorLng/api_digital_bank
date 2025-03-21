@@ -86,49 +86,6 @@ Authorization: Bearer {token}
     "message": "Logged out successfully"
 }
 ```
-
-#### Forgot Password
-```
-POST /forgot-password
-```
-**Request Body**:
-```json
-{
-    "email": "john@example.com"
-}
-```
-**Response** (200 OK):
-```json
-{
-    "success": true,
-    "message": "Password reset link sent to your email"
-}
-```
-
-#### Change Password
-```
-PUT /password-change
-```
-**Headers**:
-```
-Authorization: Bearer {token}
-```
-**Request Body**:
-```json
-{
-    "current_password": "old_password",
-    "password": "new_password",
-    "password_confirmation": "new_password"
-}
-```
-**Response** (200 OK):
-```json
-{
-    "success": true,
-    "message": "Password changed successfully"
-}
-```
-
 ### Account Management Endpoints
 
 #### Add Funds

@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use App\Interfaces\HashServiceInterface;
 use App\Services\HashService;
-use App\Services\Auth\ForgotPasswordService;
 use Laravel\Passport\Passport;
 use App\Services\Auth\AuthService;
 use App\Services\Auth\PasswordService;
@@ -25,12 +24,6 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(HashServiceInterface::class, HashService::class);
 
         // Auth Services
-        $this->app->bind(ForgotPasswordService::class, function ($app) {
-            return new ForgotPasswordService(
-                $app->make(UserRepository::class)
-            );
-        });
-
         $this->app->bind(AuthService::class, function ($app) {
             return new AuthService(
                 $app->make(UserRepository::class),
@@ -38,15 +31,6 @@ class AppServiceProvider extends ServiceProvider
                 $app->make(CustomerAccountBo::class)
             );
         });
-
-        $this->app->bind(PasswordService::class, function ($app) {
-            return new PasswordService(
-                $app->make(UserRepository::class),
-                $app->make(HashServiceInterface::class),
-                $app->make(ForgotPasswordService::class)
-            );
-        });
-
         // User Services
         $this->app->bind(UserRegistrationService::class, function ($app) {
             return new UserRegistrationService(

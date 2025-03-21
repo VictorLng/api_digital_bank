@@ -4,11 +4,13 @@ namespace App\Services\Auth;
 
 use App\Exceptions\UserNotFoundException;
 use App\Exceptions\InvalidPasswordException;
+use App\Exceptions\AuthenticationException;
 use App\Interfaces\HashServiceInterface;
 use App\Models\User;
 use App\BO\CustomerAccountBo;
 use App\Repositories\UserRepository;
 use App\Resources\UserData;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class AuthService
@@ -55,21 +57,51 @@ class AuthService
         $user->token = $token;
         return $user;
     }
+
+    /**
+     * Valida e retorna o usuário autenticado pelo token
+     *
+     * @param Request $request
+     * @return User
+     * @throws AuthenticationException
+     */
+    public function validateAuthenticatedUser(Request $request): User
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            Log::warning('Tentativa de acesso com token inválido ou expirado');
+            throw new AuthenticationException("Usuário não autenticado ou token inválido");
+        }
+
+        Log::info("Usuário autenticado: {$user->email}");
+        return $user;
+    }
+
     /**
      * Realiza o logout do usuário
      *
-     * @param object $request
+     * @param Request $request
      * @return bool
      */
-    public function logout($request): bool
+    public function logout(Request $request): bool
     {
         try {
-            $request->user()->tokens()->update(['revoked' => true]);
+            $user = $this->validateAuthenticatedUser($request);
 
-            Log::info('Usuário deslogado com sucesso: ' . $request->user()->email);
+            // Revoga o token atual
+            $token = $request->user()->token();
+            if ($token) {
+                $token->revoke();
+                Log::info("Token revogado para o usuário: {$user->email}");
+            }
+
             return true;
-        } catch (\Exception $e) {
+        } catch (AuthenticationException $e) {
             Log::error('Erro ao fazer logout: ' . $e->getMessage());
+            throw $e;
+        } catch (\Exception $e) {
+            Log::error('Erro desconhecido ao fazer logout: ' . $e->getMessage());
             return false;
         }
     }
