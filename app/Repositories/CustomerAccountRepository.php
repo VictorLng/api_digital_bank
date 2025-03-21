@@ -3,34 +3,33 @@
 namespace App\Repositories;
 
 use App\Models\CustomerAccount;
+use App\Models\Transaction;
+use App\Models\User;
+use Carbon\Carbon;
+use Illuminate\Support\Collection;
 
 class CustomerAccountRepository
 {
     protected $model;
+    protected $transactionModel;
+    protected $userModel;
 
-    public function __construct(CustomerAccount $model)
+    public function __construct(CustomerAccount $model, Transaction $transactionModel, User $userModel)
     {
         $this->model = $model;
+        $this->transactionModel = $transactionModel;
+        $this->userModel = $userModel;
     }
 
-    public function register($customerData)
+    /**
+     * Registra uma nova conta
+     *
+     * @param array $data
+     * @return CustomerAccount
+     */
+    public function register(array $data)
     {
-        return $this->model->firstOrCreate([
-            'number_account' => $customerData["number_account"],
-            'user_id' => $customerData["id_user"],
-        ], [
-            'number_account' => $customerData["number_account"],
-            'agency' => $customerData["agency"],
-            'type_account' => $customerData["type_account"],
-            'status' => $customerData["status"],
-            'user_id' => $customerData["id_user"],
-            'balance' => 0
-        ]);
-    }
-
-    public function findByUserId($userId)
-    {
-        return $this->model->where('user_id', $userId)->first();
+        return $this->model->create($data);
     }
 
     /**
@@ -45,29 +44,7 @@ class CustomerAccountRepository
     }
 
     /**
-     * Cria uma nova conta de cliente
-     *
-     * @param array $data
-     * @return CustomerAccount
-     */
-    public function create(array $data)
-    {
-        return $this->model->create($data);
-    }
-
-    /**
-     * Busca uma conta pelo ID
-     *
-     * @param int $id
-     * @return CustomerAccount|null
-     */
-    public function findById(int $id)
-    {
-        return $this->model->findById($id);
-    }
-
-    /**
-     * Busca uma conta pelo número da conta
+     * Busca uma conta pelo número
      *
      * @param string $accountNumber
      * @return CustomerAccount|null
@@ -78,14 +55,95 @@ class CustomerAccountRepository
     }
 
     /**
-     * Atualiza o saldo de uma conta
+     * Busca uma conta pelo ID
      *
      * @param int $id
+     * @return CustomerAccount|null
+     */
+    public function findById(int $id)
+    {
+        return $this->model->find($id);
+    }
+
+    /**
+     * Busca contas pelo ID do usuário
+     *
+     * @param int $userId
+     * @return Collection
+     */
+    public function findByUserId(int $userId)
+    {
+        return $this->model->where('user_id', $userId)->first();
+    }
+
+    /**
+     * Atualiza o saldo de uma conta
+     *
+     * @param int $accountId
      * @param float $newBalance
      * @return bool
      */
-    public function updateBalance(int $id, float $newBalance): bool
+    public function updateBalance(int $accountId, float $newBalance): bool
     {
-        return $this->model->where('id', $id)->update(['balance' => $newBalance]);
+        return $this->model->where('id', $accountId)->update(['balance' => $newBalance]);
+    }
+
+    /**
+     * Cria uma nova transação
+     *
+     * @param array $data
+     * @return Transaction
+     */
+    public function createTransaction(array $data)
+    {
+        return $this->transactionModel->create($data);
+    }
+
+    /**
+     * Obtém as transações de uma conta por período
+     *
+     * @param int $accountId
+     * @param string|null $startDate
+     * @param string|null $endDate
+     * @return Collection
+     */
+    public function getTransactions(int $accountId, ?string $startDate = null, ?string $endDate = null): Collection
+    {
+        $query = $this->transactionModel->where('account_id', $accountId);
+
+        if ($startDate) {
+            $startDate = Carbon::parse($startDate)->startOfDay();
+            $query->where('created_at', '>=', $startDate);
+        }
+
+        if ($endDate) {
+            $endDate = Carbon::parse($endDate)->endOfDay();
+            $query->where('created_at', '<=', $endDate);
+        }
+
+        return $query->orderBy('created_at', 'desc')->get();
+    }
+
+    /**
+     * Obtém o número da conta pelo ID
+     *
+     * @param int $accountId
+     * @return string|null
+     */
+    public function getAccountNumberById(int $accountId): ?string
+    {
+        $account = $this->model->find($accountId);
+        return $account ? $account->number_account : null;
+    }
+
+    /**
+     * Obtém os dados do usuário pelo ID
+     *
+     * @param int $userId
+     * @return User|null
+     */
+    public function getUserData(int $userId)
+    {
+        return $this->userModel->find($userId);
     }
 }
